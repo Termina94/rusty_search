@@ -1,11 +1,21 @@
-use anyhow::Result;
+use anyhow::{Ok, Result};
+use commands::help::Help;
+use commands::manage::Manage;
+use traits::command::Command;
 
 use std::env;
-use traits::route::Init;
-use traits::route::Route;
+mod commands {
+    pub mod help;
+    pub mod manage;
+}
+mod tools {
+    pub mod debug;
+}
+pub mod traits {
+    pub mod command;
+}
 
-mod tools;
-mod traits;
+pub const EMPTY: String = String::new();
 
 fn main() -> Result<()> {
     let args: Vec<String> = env::args().collect();
@@ -16,19 +26,17 @@ fn main() -> Result<()> {
 }
 
 fn run_command(args: Vec<String>) -> Result<()> {
-    let empty_command = String::new();
-    let command = args.get(1).unwrap_or(&empty_command);
+    let empty = String::with_capacity(0);
+    let command = args.get(1).unwrap_or(&empty);
+    let action = args.get(2).unwrap_or(&empty);
+    let params = &args[3..];
 
-    // TODO: Make a help route that is used on empty command
-
-    let mut route = match command.as_str() {
-        "init" => Init::default(),
-        _ => Init::default(),
+    let mut route: Box<dyn Command> = match command.as_str() {
+        "manage" => Box::new(Manage::new()),
+        _ => Box::new(Help::new()),
     };
 
-    route.setup(args)?;
-
-    route.execute()?;
+    route.run(action, params)?;
 
     Ok(())
 }
