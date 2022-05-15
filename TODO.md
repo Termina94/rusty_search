@@ -1,0 +1,4 @@
+- Complete json validator function
+- Make a helper library to display gui element with consistent spacing without ugly printlns
+- Start `settings` command to add search config/modifiers and save them to user later
+- Make `search` command to search using key words with results dependant on config

@@ -1,3 +1,4 @@
+use crate::tools::validation::{validate_string, StringValidation};
 use anyhow::{bail, Result};
 use std::collections::HashMap;
 
@@ -18,18 +19,26 @@ macro_rules! derive_getters {
     };
 }
 
+pub struct ParamRule<'a> {
+    pub key: &'a str,
+    pub validation: StringValidation,
+    pub required: &'a bool,
+}
+
 pub trait Command: Runnable {
     fn assert_params(
         &mut self,
-        keys: Vec<&str>,
+        rules: Vec<ParamRule>,
         params: &[String],
     ) -> Result<&HashMap<String, String>> {
-        for (i, key) in keys.into_iter().enumerate() {
+        for (i, rule) in rules.into_iter().enumerate() {
             if let Some(value) = params.get(i) {
+                validate_string(value, rule.validation)?;
+
                 self.get_params_mut()
-                    .insert(key.to_string(), value.to_string());
+                    .insert(rule.key.to_string(), value.to_string());
             } else {
-                bail!(format!("No value entered for the param: {}", key));
+                bail!(format!("No value entered for the param: {}", rule.key));
             }
         }
 

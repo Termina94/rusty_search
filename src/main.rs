@@ -10,6 +10,7 @@ mod commands {
 }
 mod tools {
     pub mod debug;
+    pub mod validation;
 }
 pub mod traits {
     pub mod command;
