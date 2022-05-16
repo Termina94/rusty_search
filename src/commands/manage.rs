@@ -180,12 +180,12 @@ impl Manage {
             params,
         )?;
 
-        println!(
-            "
-        Running 'Delete' command with params:\n
-            index:      {}\n",
-            self.get_param("index"),
-        );
+        GUI::new()
+            .title("Running 'Delete' command")
+            .nl()
+            .sub_title("params:")
+            .content(&format!("index: {}", self.get_param("index")))
+            .nl();
 
         let conn = Connection::open(DB)?;
         conn.execute(
@@ -195,6 +195,8 @@ impl Manage {
             ),
             [],
         )?;
+
+        GUI::new().sub_title("result:").content("Success").nl();
 
         Ok(())
     }
