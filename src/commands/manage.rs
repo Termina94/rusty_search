@@ -1,3 +1,4 @@
+use crate::tools::gui::GUI;
 use crate::tools::validation::StringValidation::{Ignore, SqlColumn, SqlTable};
 use crate::traits::command::{derive_getters, ParamRule};
 use crate::traits::command::{Command, Runnable};
@@ -29,32 +30,23 @@ enum Actions {
     Help,
 }
 
-#[derive(Display, EnumString)]
-enum Params {
-    Index,
-    Key,
-    Data,
-}
-
 impl Manage {}
 
 impl Command for Manage {
     derive_getters!();
 
     fn help(&self) -> Result<()> {
-        println!(
-            r#"
-        ### Manage Command ###
-        
-        actions:
+        GUI::new()
+            .title("Manage Command")
+            .nl()
+            .sub_title("actions:")
+            .nl()
+            .content("create: {index} {key}             | create table called {index} and set {key}")
+            .content("init:   {index} {key} {data}      | Create table called {index}, set {key} and populate with {data}")
+            .content("delete: {index}                   | Delete index and data")
+            .content("purge:                            | Delete database")
+            .nl();
 
-            create: {{index}} {{key}}           | create table called {{index}} and set {{key}}
-            init:   {{index}} {{key}} {{data}}  | Create table called {{index}}, set {{key}} and populate with {{data}}
-            help:                               | Display helpful tips and commands
-
-            Run `{{command}} help` for specific help
-        "#
-        );
         Ok(())
     }
 }
@@ -64,7 +56,7 @@ impl Runnable for Manage {
         let action = Actions::from_str(action).unwrap_or(Actions::Help);
 
         match action {
-            Actions::Create => self.create_table(params)?,
+            Actions::Create => self.create_table(params, true)?,
             Actions::Init => self.init_index(params)?,
             Actions::Help => self.help()?,
             Actions::Delete => self.delete_index(params)?,
@@ -82,7 +74,7 @@ impl Manage {
         }
     }
 
-    fn create_table(&mut self, params: &[String]) -> Result<()> {
+    fn create_table(&mut self, params: &[String], output: bool) -> Result<()> {
         self.assert_params(
             vec![ParamRule {
                 key: "index",
@@ -91,6 +83,15 @@ impl Manage {
             }],
             params,
         )?;
+
+        if output {
+            GUI::new()
+                .title("Running 'Create' command:")
+                .nl()
+                .sub_title("params")
+                .content(&format!("index: {}", self.get_param("index")))
+                .nl();
+        }
 
         let connection = Connection::open(DB)?;
 
@@ -103,10 +104,15 @@ impl Manage {
             table = self.get_param("index")
         ))?;
 
-        println!(
-            "
-        SUCCESS!\n\r"
-        );
+        if output {
+            GUI::new()
+                .sub_title("result:")
+                .content(&format!(
+                    "Success: `{}` Index Created/Exists",
+                    self.get_param("index")
+                ))
+                .nl();
+        }
 
         Ok(())
     }
@@ -133,18 +139,16 @@ impl Manage {
             params,
         )?;
 
-        self.create_table(params)?;
+        self.create_table(params, false)?;
 
-        println!(
-            "
-        Running 'Init' command with params:\n
-            index:      {}
-            key:        {}
-            data:       {}\n",
-            self.get_param("index"),
-            self.get_param("key"),
-            self.get_param("data"),
-        );
+        GUI::new()
+            .title("Running 'Init' command:")
+            .nl()
+            .sub_title("params:")
+            .content(&format!("index:   {}", self.get_param("index")))
+            .content(&format!("key:     {}", self.get_param("key")))
+            .content(&format!("data:    {}", self.get_param("data")))
+            .nl();
 
         let conn = Connection::open(DB)?;
         let mut stmt = conn.prepare(&format!(
@@ -161,10 +165,7 @@ impl Manage {
             ])?;
         }
 
-        println!(
-            "
-        SUCCESS!\n\r"
-        );
+        GUI::new().sub_title("result:").content("Success").nl();
 
         Ok(())
     }
@@ -199,12 +200,11 @@ impl Manage {
     }
 
     fn purge_db() -> Result<()> {
+        GUI::new().title("Running 'Purge'").nl();
+
         remove_file("db.db")?;
 
-        println!(
-            "
-        SUCCESS!\n\r"
-        );
+        GUI::new().sub_title("result:").content("Success").nl();
 
         Ok(())
     }

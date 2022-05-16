@@ -17,7 +17,7 @@ pub fn validate_string(value: &String, validation: StringValidation) -> Result<(
 pub fn sql_table(name: &String) -> Result<()> {
     for char in name.chars() {
         if !char.is_alphabetic() {
-            bail!("Invalid value for index/table");
+            bail!("Invalid value for index");
         }
     }
     Ok(())
@@ -26,7 +26,7 @@ pub fn sql_table(name: &String) -> Result<()> {
 pub fn sql_column(name: &String) -> Result<()> {
     for char in name.chars() {
         if !char.is_alphabetic() {
-            bail!("Invalid value for key/column");
+            bail!("Invalid value for key");
         }
     }
     Ok(())

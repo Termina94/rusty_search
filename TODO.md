@@ -1,4 +1,10 @@
-- Complete json validator function
-- Make a helper library to display gui element with consistent spacing without ugly printlns
-- Start `settings` command to add search config/modifiers and save them to user later
-- Make `search` command to search using key words with results dependant on config
+Commands:
+
+- update: edit index data
+- search: search index data for results
+- rank: add ranking settings for search
+- config: config settings like db name/location
+
+Future:
+
+- create web server and api
