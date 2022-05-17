@@ -1,4 +1,5 @@
 use anyhow::{bail, Ok, Result};
+use commands::edit::Edit;
 use commands::help::Help;
 use commands::manage::Manage;
 use strum::{Display, EnumString};
@@ -6,6 +7,7 @@ use traits::command::Command;
 
 use std::{env, str::FromStr};
 mod commands {
+    pub mod edit;
     pub mod help;
     pub mod manage;
 }
@@ -23,7 +25,7 @@ enum Commands {
     #[strum(ascii_case_insensitive)]
     Manage,
     #[strum(ascii_case_insensitive)]
-    Update,
+    Edit,
     #[strum(ascii_case_insensitive)]
     Search,
     #[strum(ascii_case_insensitive)]
@@ -57,6 +59,7 @@ fn run_command(args: Vec<String>) -> Result<()> {
 
     let mut route: Box<dyn Command> = match command {
         Commands::Manage => Box::new(Manage::new()),
+        Commands::Edit => Box::new(Edit::new()),
         Commands::Help => Box::new(Help::new()),
         _ => bail!(format!("Nothing implemented for {}", command)),
     };

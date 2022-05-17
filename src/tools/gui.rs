@@ -1,8 +1,8 @@
 pub struct GUI {}
 
-const TITLE_SPACING: u32 = 8;
-const SUB_TITLE_SPACING: u32 = 12;
-const CONTENT_SPACING: u32 = 14;
+const TITLE_SPACING: u32 = 2;
+const SUB_TITLE_SPACING: u32 = 4;
+const CONTENT_SPACING: u32 = 6;
 
 impl GUI {
     pub fn new() -> Self {

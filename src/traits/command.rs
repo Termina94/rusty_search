@@ -37,7 +37,7 @@ pub trait Command: Runnable {
 
                 self.get_params_mut()
                     .insert(rule.key.to_string(), value.to_string());
-            } else {
+            } else if *rule.required {
                 bail!(format!("No value entered for the param: {}", rule.key));
             }
         }
@@ -48,6 +48,12 @@ pub trait Command: Runnable {
         self.get_params()
             .get(key)
             .expect(&format!("Can't find expected param: {}", key))
+    }
+    fn get_param_bool(&self, key: &str) -> bool {
+        match self.get_params().get(key) {
+            Some(value) => value == "true",
+            None => false,
+        }
     }
     fn set_params(&mut self, args: HashMap<String, String>);
     fn get_params(&self) -> &HashMap<String, String>;
