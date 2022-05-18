@@ -89,7 +89,6 @@ impl Manage {
                 .title("Running 'Create' command:")
                 .nl()
                 .sub_title("params")
-                .nl()
                 .content(&format!("index: {}", self.get_param("index")))
                 .nl();
         }
@@ -186,7 +185,6 @@ impl Manage {
             .title("Running 'Delete' command")
             .nl()
             .sub_title("params:")
-            .nl()
             .content(&format!("index: {}", self.get_param("index")))
             .nl();
 

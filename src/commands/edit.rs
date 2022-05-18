@@ -153,8 +153,31 @@ impl Edit {
             params,
         )?;
 
+        GUI::new()
+            .title("Running 'edit' 'remove' command:")
+            .nl()
+            .sub_title("params")
+            .content(&format!("index: {}", self.get_param("index")))
+            .content(&format!("key: {}", self.get_param("key")))
+            .nl();
+
+        let conn = Connection::open(DB)?;
+
+        let row_existed = self.remove_entry(&conn)?;
+
+        let result = match row_existed {
+            true => format!(
+                "Success: Row removed with key '{key}'",
+                key = self.get_param("key")
+            ),
+            false => format!(
+                "Warning: Row did not exist with key '{key}'",
+                key = self.get_param("key")
+            ),
+        };
+
+        GUI::new().sub_title("result:").content(&result).nl();
         // TODO:
-        //      query to remove row from index table
         //      add gui feedback for this commands actions
         //      ensure help command reflects this new command correctly
         //      remove SqlColumn from validation as the key param is the column value, not column name
@@ -187,6 +210,18 @@ impl Edit {
         )?;
 
         Ok(())
+    }
+
+    fn remove_entry(&self, conn: &Connection) -> Result<bool> {
+        let rows_effected = conn.execute(
+            &format!(
+                "DELETE FROM {table} WHERE `key` = ?1",
+                table = self.get_param("index")
+            ),
+            [self.get_param("key")],
+        )?;
+
+        Ok(rows_effected > 0)
     }
 
     fn update_entry(&self, conn: &Connection) -> Result<()> {
