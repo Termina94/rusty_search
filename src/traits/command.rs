@@ -31,9 +31,9 @@ pub trait Command: Runnable {
         rules: Vec<ParamRule>,
         params: &[String],
     ) -> Result<&HashMap<String, String>> {
-        for (i, rule) in rules.into_iter().enumerate() {
+        for (i, rule) in rules.iter().enumerate() {
             if let Some(value) = params.get(i) {
-                validate_string(value, rule.validation)?;
+                validate_string(value, &rule)?;
 
                 self.get_params_mut()
                     .insert(rule.key.to_string(), value.to_string());
@@ -51,7 +51,7 @@ pub trait Command: Runnable {
     }
     fn get_param_bool(&self, key: &str) -> bool {
         match self.get_params().get(key) {
-            Some(value) => value == "true",
+            Some(value) => value == "true" || value == key,
             None => false,
         }
     }
@@ -59,6 +59,9 @@ pub trait Command: Runnable {
     fn get_params(&self) -> &HashMap<String, String>;
     fn get_params_mut(&mut self) -> &mut HashMap<String, String>;
     fn help(&self) -> Result<()>;
+    fn print_title(&self) -> bool {
+        true
+    }
 }
 
 pub trait Runnable {

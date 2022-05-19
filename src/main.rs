@@ -3,6 +3,7 @@ use commands::edit::Edit;
 use commands::help::Help;
 use commands::manage::Manage;
 use strum::{Display, EnumString};
+use tools::gui::GUI;
 use traits::command::Command;
 
 use std::{env, str::FromStr};
@@ -63,6 +64,14 @@ fn run_command(args: Vec<String>) -> Result<()> {
         Commands::Help => Box::new(Help::new()),
         _ => bail!(format!("Nothing implemented for {}", command)),
     };
+
+    if route.print_title() {
+        GUI::new().title(&format!(
+            "Running '{command}' '{action}'",
+            command = command_string,
+            action = action
+        ));
+    }
 
     route.run(action, params)?;
 

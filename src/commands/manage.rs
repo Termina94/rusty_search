@@ -38,7 +38,6 @@ impl Command for Manage {
     fn help(&self) -> Result<()> {
         GUI::new()
             .title("Manage Command")
-            .nl()
             .sub_title("actions:")
             .nl()
             .content("create: {index} {key}             | create table called {index} and set {key}")
@@ -84,14 +83,7 @@ impl Manage {
             params,
         )?;
 
-        if output {
-            GUI::new()
-                .title("Running 'Create' command:")
-                .nl()
-                .sub_title("params")
-                .content(&format!("index: {}", self.get_param("index")))
-                .nl();
-        }
+        GUI::new().print_params(self as &dyn Command);
 
         let connection = Connection::open(DB)?;
 
@@ -139,17 +131,9 @@ impl Manage {
             params,
         )?;
 
-        self.create_table(params, false)?;
+        GUI::new().print_params(self as &dyn Command);
 
-        GUI::new()
-            .title("Running 'Init' command:")
-            .nl()
-            .sub_title("params:")
-            .nl()
-            .content(&format!("index:   {}", self.get_param("index")))
-            .content(&format!("key:     {}", self.get_param("key")))
-            .content(&format!("data:    {}", self.get_param("data")))
-            .nl();
+        self.create_table(params, false)?;
 
         let conn = Connection::open(DB)?;
         let mut stmt = conn.prepare(&format!(
@@ -181,33 +165,34 @@ impl Manage {
             params,
         )?;
 
-        GUI::new()
-            .title("Running 'Delete' command")
-            .nl()
-            .sub_title("params:")
-            .content(&format!("index: {}", self.get_param("index")))
-            .nl();
+        GUI::new().print_params(self as &dyn Command);
 
         let conn = Connection::open(DB)?;
-        conn.execute(
-            &format!(
-                "DROP TABLE IF EXISTS `{table}`",
-                table = self.get_param("index")
-            ),
+        let result = match conn.execute(
+            &format!("DROP TABLE `{table}`", table = self.get_param("index")),
             [],
-        )?;
+        ) {
+            Err(err) => "Error: ".to_string() + &err.to_string(),
+            _ => format!(
+                "Success: deleted index '{index}'",
+                index = self.get_param("index"),
+            ),
+        };
 
-        GUI::new().sub_title("result:").content("Success").nl();
+        GUI::new().sub_title("result:").content(&result).nl();
 
         Ok(())
     }
 
     fn purge_db() -> Result<()> {
-        GUI::new().title("Running 'Purge'").nl();
+        GUI::new().title("Running 'Purge'");
 
         remove_file("db.db")?;
 
-        GUI::new().sub_title("result:").content("Success").nl();
+        GUI::new()
+            .sub_title("result:")
+            .content("Success: Database has been deleted")
+            .nl();
 
         Ok(())
     }

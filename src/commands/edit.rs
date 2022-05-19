@@ -34,7 +34,6 @@ impl Command for Edit {
     fn help(&self) -> Result<()> {
         GUI::new()
             .title("Edit Command")
-            .nl()
             .sub_title("actions:")
             .nl()
             .content("create: {index} {key} {data}              | Create a new entry in {index} with {key} and {data}")
@@ -92,8 +91,12 @@ impl Edit {
             params,
         )?;
 
+        GUI::new().print_params(self as &dyn Command);
+
         let conn = Connection::open(DB)?;
-        self.add_new_entry(&conn)?;
+        let result = self.add_new_entry(&conn)?;
+
+        GUI::new().sub_title("result:").content(&result).nl();
 
         Ok(())
     }
@@ -125,15 +128,37 @@ impl Edit {
             params,
         )?;
 
+        GUI::new().print_params(self as &dyn Command);
+
+        let mut action = String::with_capacity(21);
+
         let conn = Connection::open(DB)?;
         let create = self.get_param_bool("create");
 
         if create && !self.does_entry_exist(&conn)? {
-            println!("doing!!");
-            return self.add_new_entry(&conn);
+            self.add_new_entry(&conn)?;
+
+            action.push_str("Added new")
+        } else {
+            self.update_entry(&conn)?;
+
+            match self.update_entry(&conn)? {
+                true => action.push_str("Updated entry"),
+                false => action.push_str("No matching entry for"),
+            }
         }
 
-        self.update_entry(&conn)
+        GUI::new()
+            .sub_title("result:")
+            .content(&format!(
+                "Success: {result} for {index}->{key}",
+                result = action,
+                index = self.get_param("index"),
+                key = self.get_param("key")
+            ))
+            .nl();
+
+        Ok(())
     }
 
     fn remove(&mut self, params: &[String]) -> Result<()> {
@@ -153,13 +178,7 @@ impl Edit {
             params,
         )?;
 
-        GUI::new()
-            .title("Running 'edit' 'remove' command:")
-            .nl()
-            .sub_title("params")
-            .content(&format!("index: {}", self.get_param("index")))
-            .content(&format!("key: {}", self.get_param("key")))
-            .nl();
+        GUI::new().print_params(self as &dyn Command);
 
         let conn = Connection::open(DB)?;
 
@@ -200,16 +219,21 @@ impl Edit {
         Ok(result)
     }
 
-    fn add_new_entry(&self, conn: &Connection) -> Result<()> {
-        conn.execute(
+    fn add_new_entry(&self, conn: &Connection) -> Result<String> {
+        match conn.execute(
             &format!(
                 "INSERT INTO {table} (`key`, `data`) VALUES (?1, ?2)",
                 table = self.get_param("index")
             ),
             [self.get_param("key"), self.get_param("data")],
-        )?;
-
-        Ok(())
+        ) {
+            Err(err) => Ok("Error: ".to_string() + &err.to_string()),
+            _ => Ok(format!(
+                "Success: Entry added for {index}->{key}",
+                index = self.get_param("index"),
+                key = self.get_param("key"),
+            )),
+        }
     }
 
     fn remove_entry(&self, conn: &Connection) -> Result<bool> {
@@ -224,8 +248,8 @@ impl Edit {
         Ok(rows_effected > 0)
     }
 
-    fn update_entry(&self, conn: &Connection) -> Result<()> {
-        conn.execute(
+    fn update_entry(&self, conn: &Connection) -> Result<bool> {
+        let updated_users = conn.execute(
             &format!(
                 "UPDATE {table} SET `data` = ?1 WHERE `key` = ?2",
                 table = self.get_param("index")
@@ -233,6 +257,6 @@ impl Edit {
             [self.get_param("data"), self.get_param("key")],
         )?;
 
-        Ok(())
+        Ok(updated_users > 0)
     }
 }

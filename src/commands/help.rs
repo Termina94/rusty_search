@@ -22,6 +22,10 @@ enum Actions {
 impl Command for Help {
     derive_getters!();
 
+    fn print_title(&self) -> bool {
+        false
+    }
+
     fn help(&self) -> Result<()> {
         println!("
 ,,,,,;;;;;,,,,,;;::ccc::::cccc::ccc::;:clodxxxxxkkOOkkxxxkkkkkkkxxxkkO0000OOOO0KXXNNNNNNNNNNNNNNNNNNNNNNNNNNXXXXXNNNXXXXXNNNNXNNNNNNXXXXXXXXXXNNNNNXXXXXXXXXXNNNNXXXXXXXXXXXNNNXKK0KKXNNNNNWWWNXXXKKXXXK
@@ -140,14 +144,13 @@ impl Help {
     pub fn show_help(&self) -> Result<()> {
         GUI::new()
             .title("Welcome to Rusty Search")
-            .nl()
             .sub_title("commands:")
             .nl()
-            .content("manage: actions to create and delete indexes")
-            .content("update: actions update and manipulate index data")
-            .content("search: actions to search index data")
-            .content("rank:   actions to set search ranking settings")
-            .content("config: actions to change config settings")
+            .content("manage:   actions to create and delete indexes")
+            .content("edit:     actions update and manipulate index data")
+            .content("search:   actions to search index data")
+            .content("rank:     actions to set search ranking settings")
+            .content("config:   actions to change config settings")
             .nl()
             .sub_title("Run `{command} help` for specific help")
             .nl();

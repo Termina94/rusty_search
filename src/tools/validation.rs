@@ -1,5 +1,7 @@
 use anyhow::{bail, Result};
 
+use crate::traits::command::ParamRule;
+
 pub enum StringValidation {
     SqlTable,
     SqlColumn,
@@ -7,11 +9,11 @@ pub enum StringValidation {
     Ignore,
 }
 
-pub fn validate_string(value: &String, validation: StringValidation) -> Result<()> {
-    match validation {
+pub fn validate_string(value: &String, rule: &ParamRule) -> Result<()> {
+    match rule.validation {
         StringValidation::SqlTable => sql_table(value),
         StringValidation::SqlColumn => sql_column(value),
-        StringValidation::Bool => boolean(value),
+        StringValidation::Bool => boolean(value, rule.key),
         StringValidation::Ignore => Ok(()),
     }
 }
@@ -34,9 +36,10 @@ pub fn sql_column(name: &String) -> Result<()> {
     Ok(())
 }
 
-pub fn boolean(name: &String) -> Result<()> {
+pub fn boolean(name: &String, key: &str) -> Result<()> {
     match name.as_str() {
         "true" | "false" => Ok(()),
+        _ if name == key => Ok(()),
         _ => bail!("Invalid value for boolean, expected true|false"),
     }
 }
