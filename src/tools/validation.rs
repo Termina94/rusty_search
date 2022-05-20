@@ -4,7 +4,7 @@ use crate::traits::command::ParamRule;
 
 pub enum StringValidation {
     SqlTable,
-    SqlColumn,
+    SqlText,
     Bool,
     Ignore,
 }
@@ -12,7 +12,7 @@ pub enum StringValidation {
 pub fn validate_string(value: &String, rule: &ParamRule) -> Result<()> {
     match rule.validation {
         StringValidation::SqlTable => sql_table(value),
-        StringValidation::SqlColumn => sql_column(value),
+        StringValidation::SqlText => sql_text(value),
         StringValidation::Bool => boolean(value, rule.key),
         StringValidation::Ignore => Ok(()),
     }
@@ -27,11 +27,9 @@ pub fn sql_table(name: &String) -> Result<()> {
     Ok(())
 }
 
-pub fn sql_column(name: &String) -> Result<()> {
-    for char in name.chars() {
-        if !char.is_alphabetic() {
-            bail!("Invalid value for key, expected alphabetic string");
-        }
+pub fn sql_text(name: &String) -> Result<()> {
+    if name.len() > 1000000000 {
+        bail!("Invalid value for key, too long (limit: 1000000000)");
     }
     Ok(())
 }

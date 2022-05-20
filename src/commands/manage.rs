@@ -1,5 +1,5 @@
 use crate::tools::gui::GUI;
-use crate::tools::validation::StringValidation::{Ignore, SqlColumn, SqlTable};
+use crate::tools::validation::StringValidation::{Ignore, SqlTable, SqlText};
 use crate::traits::command::{derive_getters, ParamRule};
 use crate::traits::command::{Command, Runnable};
 use anyhow::{Ok, Result};
@@ -119,7 +119,7 @@ impl Manage {
                 },
                 ParamRule {
                     key: "key",
-                    validation: SqlColumn,
+                    validation: SqlText,
                     required: &true,
                 },
                 ParamRule {

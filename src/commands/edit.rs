@@ -1,5 +1,5 @@
 use crate::tools::gui::GUI;
-use crate::tools::validation::StringValidation::{Bool, Ignore, SqlColumn, SqlTable};
+use crate::tools::validation::StringValidation::{Bool, Ignore, SqlTable, SqlText};
 use crate::traits::command::{derive_getters, ParamRule};
 use crate::traits::command::{Command, Runnable};
 use anyhow::{Ok, Result};
@@ -79,7 +79,7 @@ impl Edit {
                 },
                 ParamRule {
                     key: "key",
-                    validation: SqlColumn,
+                    validation: SqlText,
                     required: &true,
                 },
                 ParamRule {
@@ -111,7 +111,7 @@ impl Edit {
                 },
                 ParamRule {
                     key: "key",
-                    validation: SqlColumn,
+                    validation: SqlText,
                     required: &true,
                 },
                 ParamRule {
@@ -196,10 +196,6 @@ impl Edit {
         };
 
         GUI::new().sub_title("result:").content(&result).nl();
-        // TODO:
-        //      add gui feedback for this commands actions
-        //      ensure help command reflects this new command correctly
-        //      remove SqlColumn from validation as the key param is the column value, not column name
 
         Ok(())
     }
